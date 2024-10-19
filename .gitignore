@@ -31,6 +31,5 @@
 *.out
 *.app
 
-# My files that I do not want to be neither pushed nor commited
-todo.md
+# My files that I want to be neither pushed nor commited
 *.py
