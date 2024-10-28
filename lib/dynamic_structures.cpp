@@ -518,6 +518,15 @@ public:
         return result;
     }
 
+    int find(char ch) const {
+        for (size_t i = 0; i < length; ++i) {
+            if (data[i] == ch) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     friend std::istream& operator>>(std::istream& is, string& str);
     friend std::ostream& operator<<(std::ostream& os, const string& str);
 };
