@@ -667,6 +667,47 @@ public:
             && list_iterator == other.list_iterator;
         }
     };
+    
+    class const_iterator {
+    private:
+        const BucketType* buckets;
+        size_t bucket_index;
+        typename BucketType::const_iterator list_iterator;
+        size_t total_buckets;
+
+    public:
+        const_iterator(const BucketType* bs, size_t idx, 
+                       typename BucketType::const_iterator it, size_t total)
+            : buckets(bs), bucket_index(idx), 
+              list_iterator(it), total_buckets(total) {}
+
+        const PairType& operator*() const {
+            return *list_iterator;
+        }
+
+        const_iterator& operator++() {
+            ++list_iterator;
+            while (bucket_index < total_buckets 
+                   && list_iterator == buckets[bucket_index].end()) {
+                ++bucket_index;
+                if (bucket_index < total_buckets) {
+                    list_iterator = buckets[bucket_index].begin();
+                }
+            }
+            return *this;
+        }
+
+        bool operator!=(const const_iterator& other) const {
+            return bucket_index != other.bucket_index 
+                   || list_iterator != other.list_iterator;
+        }
+
+        bool operator==(const const_iterator& other) const {
+            return bucket_index == other.bucket_index 
+                   && list_iterator == other.list_iterator;
+        }
+    };
+    
     unordered_map(size_t initial_bucket_count = 8) 
         : bucket_count(initial_bucket_count), num_elements(0) {
         buckets = new BucketType[bucket_count];
@@ -772,5 +813,19 @@ public:
     iterator end() {
         return iterator(buckets, bucket_count, 
         typename BucketType::iterator(), bucket_count);
+    }
+
+    const_iterator begin() const {
+        for (size_t i = 0; i < bucket_count; ++i) {
+            if (!buckets[i].empty()) {
+                return const_iterator(buckets, i, buckets[i].cbegin(), bucket_count);
+            }
+        }
+        return end();
+    }
+
+    const_iterator end() const {
+        return const_iterator(buckets, bucket_count, 
+                              typename BucketType::const_iterator(), bucket_count);
     }
 };
