@@ -266,40 +266,7 @@ public:
     }
 };
 
-template <typename T>
-class initializer_list {
-private:
-    const T* data;
-    size_t list_size;
-
-
-public:
-    initializer_list(const T* arr, size_t size): data(arr), list_size(size) {}
-
-
-    const T& operator[](size_t index) const {
-        if (index < list_size) {
-            return data[index];
-        }
-    }
-
-
-    size_t size() const {
-        return size;
-    }
-
-
-    const T* begin() const {
-        return data;
-    }
-
-
-    const T* end() const {
-        return data + list_size;
-    }
-};
-#include <iostream>
-
+#include <initializer_list>
 template <typename T>
 class vector {
 private:
@@ -322,13 +289,13 @@ public:
         data = new T[vector_capacity];
     }
 
-    vector(initializer_list<T> init) : vector() {
+    vector(std::initializer_list<T> init) : vector() {
         for (const auto& item : init) {
             push_back(item);
         }
     }
 
-    vector<T>& operator=(initializer_list<T> init) {
+    vector<T>& operator=(std::initializer_list<T> init) {
         delete[] data;
         vector_size = 0;
         vector_capacity = init.size();
@@ -362,7 +329,7 @@ public:
         if (vector_size > 0) {
             --vector_size;
         } else {
-            std::cerr << "vector::cannot_pop_back_empty_vector";
+            std::cerr << "vector::cannot_pop_back_empty_vector" << std::endl;
             std::abort();
         }
     }
@@ -399,11 +366,21 @@ public:
         vector_size = new_vector_size;
     }
 
-    T& operator[](size_t index) const {
+    T& operator[](size_t index) {
         if (index < vector_size) {
             return data[index];
         } else {
-            std::cerr << "vector::cannot_pop_back_empty_vector" << std::endl;
+            std::cerr << "vector::index_out_of_range" << std::endl;
+            std::abort();
+        }
+    }
+
+    const T& operator[](size_t index) const {
+        if (index < vector_size) {
+            return data[index];
+        } else {
+            std::cerr << "vector::index_out_of_range" << std::endl;
+            std::abort();
         }
     }
 
@@ -411,11 +388,11 @@ public:
         return data;
     }
 
-
     T* end() const {
-        return data+vector_size;
+        return data + vector_size;
     }
 };
+
 
 class string {
 private:
@@ -1026,3 +1003,21 @@ public:
         return iterator(nullptr);
     }
 };
+
+int main() {
+    vector<int> vec = {1, 2, 4};
+
+    for (size_t i = 0; i < vec.size(); ++i) {
+        std::cout << vec[i] << " ";
+    }
+    std::cout << std::endl;
+
+    vec = {5, 6, 7};
+
+    for (size_t i = 0; i < vec.size(); ++i) {
+        std::cout << vec[i] << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
