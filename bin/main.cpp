@@ -270,40 +270,7 @@ public:
     }
 };
 
-template <typename T>
-class initializer_list {
-private:
-    const T* data;
-    size_t list_size;
-
-
-public:
-    initializer_list(const T* arr, size_t size): data(arr), list_size(size) {}
-
-
-    const T& operator[](size_t index) const {
-        if (index < list_size) {
-            return data[index];
-        }
-    }
-
-
-    size_t size() const {
-        return size;
-    }
-
-
-    const T* begin() const {
-        return data;
-    }
-
-
-    const T* end() const {
-        return data + list_size;
-    }
-};
-#include <iostream>
-
+#include <initializer_list>
 template <typename T>
 class vector {
 private:
@@ -326,13 +293,13 @@ public:
         data = new T[vector_capacity];
     }
 
-    vector(initializer_list<T> init) : vector() {
+    vector(std::initializer_list<T> init) : vector() {
         for (const auto& item : init) {
             push_back(item);
         }
     }
 
-    vector<T>& operator=(initializer_list<T> init) {
+    vector<T>& operator=(std::initializer_list<T> init) {
         delete[] data;
         vector_size = 0;
         vector_capacity = init.size();
@@ -366,7 +333,7 @@ public:
         if (vector_size > 0) {
             --vector_size;
         } else {
-            std::cerr << "vector::cannot_pop_back_empty_vector";
+            std::cerr << "vector::cannot_pop_back_empty_vector" << std::endl;
             std::abort();
         }
     }
@@ -403,11 +370,21 @@ public:
         vector_size = new_vector_size;
     }
 
-    T& operator[](size_t index) const {
+    T& operator[](size_t index) {
         if (index < vector_size) {
             return data[index];
         } else {
-            std::cerr << "vector::cannot_pop_back_empty_vector" << std::endl;
+            std::cerr << "vector::index_out_of_range" << std::endl;
+            std::abort();
+        }
+    }
+
+    const T& operator[](size_t index) const {
+        if (index < vector_size) {
+            return data[index];
+        } else {
+            std::cerr << "vector::index_out_of_range" << std::endl;
+            std::abort();
         }
     }
 
@@ -415,9 +392,8 @@ public:
         return data;
     }
 
-
     T* end() const {
-        return data+vector_size;
+        return data + vector_size;
     }
 };
 
@@ -1309,11 +1285,15 @@ void hilbert(int n, int x, int y,
     points.push_back({x + xi + xj/2, y + yi + yj/2});
     hilbert(n-1, x+xi+xj/2, y+yi + yj/2, -yi/2, -yj/2, -xi/2, -xj/2, points);
 }
+
+
 vector<std::pair<int, int>> generate_hilbert_curve(int order) {
     vector<std::pair<int, int>> points;
     hilbert(order, 0, 0, 1 << (order-1), 0, 0, 1 << (order-1), points);
     return points;
 }
+
+
 void distribute_sand(unordered_map<std::pair<int, int>, int>& sediment, 
                      vector<std::pair<int, int>>& hilbert_order) {
     queue<std::pair<int, int>> changes;
@@ -1324,9 +1304,42 @@ void distribute_sand(unordered_map<std::pair<int, int>, int>& sediment,
         }
     }
 
+    unordered_map<std::pair<int, int>, int> changes_map;
     while (!changes.empty()) {
         std::pair<int, int> coord = changes.front();
         changes.pop();
+
+        int sand_count = sediment[coord];
+        if (sand_count >= 4) {
+            int distribute_count = sand_count / 4;
+            sediment[coord] -= distribute_count * 4;
+
+            vector<int> vec = {1, 3, 4, 5};
+            vector<std::pair<int, int>> neighbors = {
+                std::make_pair(coord.first - 1, coord.second),
+                std::make_pair(coord.first + 1, coord.second),
+                std::make_pair(coord.first, coord.second - 1),
+                std::make_pair(coord.first, coord.second + 1)
+            };
+
+            for (auto& neighbor : neighbors) {
+                if (changes_map.count(neighbor) == 0) {
+                    changes_map[neighbor] = 0; //initialize if not exists
+                }
+                changes_map[neighbor] += distribute_count;
+            }
+        }
+    }
+
+    for (auto& entry : changes_map) {
+        auto& neighbor = entry.first;
+        int added_sand = entry.second;
+
+        if (sediment.count(neighbor) == 0) {
+            sediment[neighbor] = 0;
+        }
+
+        sediment[neighbor] += added_sand;
     }
 }
 
@@ -1361,11 +1374,11 @@ int main(int argc, char* argv[]) {
     vector<std::pair<int, int>> hilbert_order = 
                                 generate_hilbert_curve(hilbert_curve_order);
 
+    if (arg_values.freq == 0) arg_values.freq = arg_values.max_iter;
     for (int i = 0; i < total_iterations; ++i) {
         distribute_sand(sediment, hilbert_order);
 
         if (arg_values.freq != 0 && (i) % arg_values.freq == 0) {
-            std::cout << "iteration number: " << i+1 << std::endl;
             for (auto& i : sediment) {
                 std::cout << i.first.first << ' ' << i.first.second << ' ' <<
                              i.second << std::endl;
