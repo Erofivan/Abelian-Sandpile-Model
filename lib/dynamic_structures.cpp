@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <functional>
 #include <type_traits>
@@ -297,54 +298,48 @@ public:
         return data + list_size;
     }
 };
+#include <iostream>
 
 template <typename T>
 class vector {
 private:
-    T* data; //pointer to an array
+    T* data;
     size_t vector_size;
     size_t vector_capacity;
 
     void resize_private(size_t new_vector_capacity) {
-        T* new_data = new T[new_vector_capacity]; //allocating a new array
+        T* new_data = new T[new_vector_capacity];
         for (size_t i = 0; i < vector_size; ++i) {
-            new_data[i] = data[i]; //copying an array
+            new_data[i] = data[i];
         }
-        delete [] data; //erase old array
-        data = new_data; //changing pointer to an array
-        vector_capacity = new_vector_capacity; //changing vector capacity
+        delete[] data;
+        data = new_data;
+        vector_capacity = new_vector_capacity;
     }
+
 public:
-    //default constructor
-    vector(): vector_size(0), vector_capacity(1) {
+    vector() : vector_size(0), vector_capacity(1) {
         data = new T[vector_capacity];
     }
 
-
-    //constructor with initializer
-    vector(std::initializer_list<T> init): vector() {
+    vector(initializer_list<T> init) : vector() {
         for (const auto& item : init) {
             push_back(item);
         }
     }
 
-
-    //constructor with = initializer
-    vector<T>& operator=(std::initializer_list<T> init) {
-        delete [] data;
+    vector<T>& operator=(initializer_list<T> init) {
+        delete[] data;
         vector_size = 0;
         vector_capacity = init.size();
         data = new T[vector_capacity];
-
         for (const auto& item : init) {
             push_back(item);
         }
         return *this;
     }
-    
 
-    //constuctor that initializer n element with value m
-    vector(size_t n, const T& value = T()): vector() {
+    vector(size_t n, const T& value = T()) : vector() {
         resize_private(n);
         for (size_t i = 0; i < n; ++i) {
             data[i] = value;
@@ -352,12 +347,9 @@ public:
         vector_size = n;
     }
 
-
-    //destructor
     ~vector() {
-        delete [] data;
+        delete[] data;
     }
-
 
     void push_back(const T& value) {
         if (vector_size == vector_capacity) {
@@ -365,7 +357,6 @@ public:
         } 
         data[vector_size++] = value;
     }
-
 
     void pop_back() {
         if (vector_size > 0) {
@@ -376,6 +367,45 @@ public:
         }
     }
 
+    size_t size() const {
+        return vector_size;
+    }
+
+    size_t capacity() const {
+        return vector_capacity;
+    }
+
+    bool empty() const {
+        return vector_size == 0;
+    }
+
+    void clear() {
+        vector_size = 0;
+    }
+
+    void shrink_to_fit() {
+        if (vector_size < vector_capacity) {
+            resize_private(vector_size);
+        } 
+    }
+
+    void resize(size_t new_vector_size, const T& default_value = T()) {
+        if (new_vector_size > vector_capacity) {
+            resize_private(new_vector_size);
+        }
+        for (size_t i = vector_size; i < new_vector_size; ++i) {
+            data[i] = default_value;
+        }
+        vector_size = new_vector_size;
+    }
+
+    T& operator[](size_t index) const {
+        if (index < vector_size) {
+            return data[index];
+        } else {
+            std::cerr << "vector::cannot_pop_back_empty_vector" << std::endl;
+        }
+    }
 
     T* begin() const {
         return data;
@@ -384,55 +414,6 @@ public:
 
     T* end() const {
         return data+vector_size;
-    }
-
-
-    size_t size() const {
-        return vector_size;
-    }
-
-
-    size_t capacity() const {
-        return vector_capacity;
-    }
-
-
-    bool empty() const {
-        return vector_size == 0;
-    }
-
-
-    void clear() {
-        vector_size = 0;
-    }
-
-
-    void shrink_to_fit() {
-        if (vector_size < vector_capacity) {
-            resize_private(vector_size);
-        } 
-    }
-
-
-    void resize(size_t new_vector_size, const T& default_value = T()) {
-        //if resizes to bigger to next
-        if (new_vector_size > vector_capacity) {
-            resize_private(new_vector_size);
-        }
-        for (size_t i = vector_size; i < new_vector_size; ++i) {
-            data[i] = default_value;
-        }
-        //skip to this if resizes to smaller
-        vector_size = new_vector_size;
-    }
-
-
-    T& operator[](size_t index) const {
-        if (index < vector_size) {
-            return data[index];
-        } 
-        std::cerr << "vector::index_out_of_range";
-        std::abort();
     }
 };
 
@@ -548,10 +529,9 @@ public:
             return string(); 
         }
 
-        if (start + len > length) {
-            len = length - start;
+        if (len >= start) {
+            len = len - start;    
         }
-
         string result;
         result.length = len;
         result.data = new char[len + 1];
@@ -563,17 +543,18 @@ public:
         return result;
     }
 
-    int find(char ch) const {
+    size_t find(char ch) const {
         for (size_t i = 0; i < length; ++i) {
             if (data[i] == ch) {
                 return i;
             }
         }
-        return -1;
+        return length;
     }
 
     friend std::istream& operator>>(std::istream& is, string& str);
     friend std::ostream& operator<<(std::ostream& os, const string& str);
+    friend std::istream& getline(std::istream& is, string& str);
 };
 
 std::ostream& operator<<(std::ostream& os, const string& str) {
@@ -601,7 +582,35 @@ std::istream& operator>>(std::istream& is, string& str) {
     return is;
 }
 
+std::istream& getline(std::istream& is, string& str) {
+    delete[] str.data;
+    str.data = nullptr;
+    str.length = 0;
+
+    char buffer[1024]; 
+    is.getline(buffer, sizeof(buffer)); 
+
+    str.length = 0;
+    while (buffer[str.length] != '\0') {
+        ++str.length;
+    }
+
+    str.data = new char[str.length + 1];
+    for (size_t i = 0; i < str.length; ++i) {
+        str.data[i] = buffer[i];
+    }
+    str.data[str.length] = '\0'; 
+
+    return is;
+}
+
 struct CoolHash{
+
+    size_t operator()(const std::pair<int, int>& p) const {
+        auto h1 = std::hash<int>{}(p.first);
+        auto h2 = std::hash<int>{}(p.second);
+        return h1 ^ h2;
+    }
 
     size_t operator()(string s) const {
         const size_t prime1 = 4583;
@@ -631,8 +640,14 @@ struct HashSelector<string> {
     using type = CoolHash;
 };
 
+template <>
+struct HashSelector<std::pair<int,int>> {
+    using type = CoolHash;
+};
+
 template<typename T>
-struct HashSelector<T, typename std::enable_if<!std::is_same<T, string>::value>::type> {
+struct HashSelector<T, typename std::enable_if<!(std::is_same<T, string>::value &&
+                std::is_same<T, std::pair<int,int>>::value)>::type> {
     using type = std::hash<T>; 
 };
 
@@ -874,5 +889,140 @@ public:
         return const_iterator(buckets, bucket_count, 
                               typename BucketType::const_iterator(), 
                               bucket_count);
+    }
+};
+
+template <typename T>
+class queue {
+private:
+    struct Node {
+        T data;
+        Node* next;
+        Node* prev;
+        Node(const T& value) : data(value), next(nullptr), prev(nullptr) {}
+    };
+
+    Node* head;
+    Node* tail;
+    size_t length;
+
+public:
+    queue() : head(nullptr), tail(nullptr), length(0) {}
+
+    ~queue() {
+        while (length > 0) {
+            pop();
+        }
+    }
+
+    T& front() {
+        if (head == nullptr) {
+            std::cerr << "error: queue is empty" << std::endl;
+        }
+        return head->data;
+    }
+
+    T& back() {
+        if (tail == nullptr) {
+            std::cerr << "error: queue is empty" << std::endl;
+        }
+        return tail->data;
+    }
+
+    // void push_front(const T& value) {
+    //     Node* newNode = new Node(value);
+    //     if (head == nullptr) {
+    //         head = tail = newNode;
+    //     } else {
+    //         newNode->next = head;
+    //         head->prev = newNode;
+    //         head = newNode;
+    //     }
+    //     ++length;
+    // }
+
+    void push(const T& value) {
+        Node* newNode = new Node(value);
+        if (tail == nullptr) {
+            head = tail = newNode;
+        } else {
+            newNode->prev = tail;
+            tail->next = newNode;
+            tail = newNode;
+        }
+        ++length;
+    }
+
+    void pop() {
+        if (head == nullptr) {
+            std::cerr << "error: queue is empty" << std::endl;
+        }
+        Node* temp = head;
+        head = head->next;
+        if (head) {
+            head->prev = nullptr;
+        } else {
+            tail = nullptr;
+        }
+        delete temp;
+        --length;
+    }
+
+    // void pop_back() {
+    //     if (tail == nullptr) {
+    //         std::cerr << "error: queue is empty" << std::endl;
+    //     }
+    //     Node* temp = tail;
+    //     tail = tail->prev;
+    //     if (tail) {
+    //         tail->next = nullptr;
+    //     } else {
+    //         head = nullptr;
+    //     }
+    //     delete temp;
+    //     --length;
+    // }
+
+    bool empty() const {
+        return length == 0;
+    }
+
+    void clear() {
+        while (length > 0) {
+            pop();
+        }
+    }
+
+    size_t size() const {
+        return length;
+    }
+
+    class iterator {
+    private:
+        Node* current;
+
+    public:
+        iterator(Node* node) : current(node) {}
+
+        T& operator*() const {
+            return current->data;
+        }
+
+        iterator& operator++() {
+            current = current->next;
+            return *this;
+        }
+
+        bool operator!=(const iterator& other) const {
+            return current != other.current;
+        }
+    };
+
+    iterator begin() const {
+        return iterator(head);
+    }
+
+    iterator end() const {
+        return iterator(nullptr);
     }
 };
