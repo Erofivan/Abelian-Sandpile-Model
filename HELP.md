@@ -10,12 +10,12 @@ Base commands:
 
 Additional command:
     [-i | --info]                       Print program information
-    [--color <v1 v2 v3 v4>]             Set sandpile color
+    [-c <value> | --set-color=<value>]  Set sandpile color
     [-h | --help]                       Get help with commands
     [-s | --stats]                      Print command options
 
 **In work**
-    [--convert]                         Convert from BMP to JPEG
+    [-j | --jpeg]                       Convert from BMP to JPEG
 
 
 See 'labwork3 --help <command>' to read about a specific command

@@ -1,0 +1,6 @@
+add_library(convertors convertors.cpp convertors.h)
+add_library(dynamic_structures dynamic_structures.cpp dynamic_structures.h)
+add_library(parser parser.cpp parser.h)
+add_library(helper helper.cpp helper.h)
+add_library(readfile readfile.cpp readfile.h)
+add_library(sandpile sandpile.cpp sandpile.h)
