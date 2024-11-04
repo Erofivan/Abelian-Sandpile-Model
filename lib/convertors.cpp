@@ -24,7 +24,7 @@ string itos(long long value) {
 
 void FillPalette(uint8_t palette[], ArgValues arg_values, int size) {
     string str = arg_values.palette;
-    if (arg_values.palette == nullptr || !(arg_values.palette == "random")) {
+    if (arg_values.palette == nullptr && !(arg_values.palette == "random")) {
         str = "FFFFFF,00FF00,800080,FFFF00,000000";
     }
     int minus = 28;
