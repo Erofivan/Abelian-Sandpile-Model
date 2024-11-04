@@ -1,27 +1,5 @@
 #include "readfile.h"
 
-string itos(long long value) {
-    if (value == 0) {
-        static char buffer[2] = "0"; 
-        return buffer;
-    }
-    char buffer[20];
-    int index = 0;
-
-    while (value > 0) {
-        buffer[index++] = (value % 10) + '0'; 
-        value /= 10; 
-    }
-    buffer[index] = '\0';
-
-    for (int i = 0; i < index / 2; i++) {
-        std::swap(buffer[i], buffer[index - i - 1]);
-    }
-    const char* temp = buffer;
-    string res = temp;
-    return res;
-}
-
 vector<std::tuple<int, int, int>> ReadCoordinates(string& str) {
     const int kInputPathNameSize = str.size();
     char buffer[kInputPathNameSize + 1]; 

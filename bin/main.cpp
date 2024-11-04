@@ -7,10 +7,7 @@
 
 
 int main(int argc, char* argv[]) {
-    
-    // int argc = 3;
-    // char* argv[] = {"", "--input=input.tsv", "--output=pictures"};
-    // Creating and filling of an unordered map, containing all valid options
+    // Filling list of valid commands
     unordered_map <string, string> valid_commands_list;
     FillValidCommandList(valid_commands_list);
 
@@ -29,44 +26,39 @@ int main(int argc, char* argv[]) {
     vector<std::tuple<int, int, int>> starting_coordinates = 
                     ReadCoordinates(arg_values.input_path);
 
-    // Preparing for proccseing all the coordinates
-    int hilbert_curve_order = 5; //order of default hilbert curve
-    int total_iterations = arg_values.max_iter;
-
-    // Initializing sandpile storage
-    unordered_map<std::pair<int, int>, int> sediment; //coords of all sand grands
-    for (auto& i : starting_coordinates) {
-        sediment[{std::get<0>(i), std::get<1>(i)}] = std::get<2>(i);
-    }
-    
-    // Filling and processing gilbert order curve
-    vector<std::pair<int, int>> hilbert_order = 
-                                generate_hilbert_curve(hilbert_curve_order);
-
     // Saving pictures for iterations
+    int total_iterations = arg_values.max_iter;
     if (arg_values.max_iter != 0) {
-        bool flag = false;
+        // Initializing sandpile storage
+        unordered_map<std::pair<int, int>, int> sediment; // Coords of all sand grands
+        for (auto& i : starting_coordinates) {
+            sediment[{std::get<0>(i), std::get<1>(i)}] = std::get<2>(i);
+        }
+        bool should_save = false;
 
         if (arg_values.freq != 0) {
-            flag = true;
+            should_save = true;
         }
 
+        //If we need to iterate with given frequency
         for (int i = 1; i <= total_iterations; ++i) {
             distribute_sand_by_iteration(sediment);
             
-            if (flag && ((i-1) % arg_values.freq == 0)) {
-                ConverToBmp(sediment, arg_values.output_path, i);
+            if (should_save && ((i-1) % arg_values.freq == 0)) {
+                ConverToBmp(sediment, arg_values.output_path, arg_values, i);
             }
         }
 
-        if (!flag && arg_values.max_iter) {
-            ConverToBmp(sediment, arg_values.output_path, arg_values.max_iter);
+        //If need to save only last iteration
+        if (!should_save && arg_values.max_iter) {
+            ConverToBmp(sediment, arg_values.output_path, arg_values, arg_values.max_iter);
         }
 
     } else {
-        distribute_sand(sediment);
+        // If we need to give just the last iteration
+        distribute_sand(starting_coordinates);
 
-        ConverToBmp(sediment, arg_values.output_path);
+        ConverToBmp(starting_coordinates, arg_values.output_path, arg_values);
     }
 
     return EXIT_SUCCESS;

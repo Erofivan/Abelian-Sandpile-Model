@@ -1,16 +1,14 @@
 #pragma once
 
+#include <cmath>
+#include <limits>
 #include <utility>
 
 #include "dynamic_structures.h"
 
-void hilbert(int n, int x, int y, 
-             int xi, int xj, 
-             int yi, int yj, 
-             std::vector<std::pair<int, int>>& points);
+void distribute_sand_by_iteration(unordered_map<std::pair<int, int>, int>& sediment);
 
-std::vector<std::pair<int, int>> generate_hilbert_curve(int order);
+void calculate_bounds(vector<std::tuple<int, int, int>>& sediment,
+                      int& left_edge, int& right_edge, int& top_edge, int& bottom_edge);
 
-void distribute_sand_by_iteration(std::unordered_map<std::pair<int, int>, int>& sediment);
-
-void distribute_sand(std::unordered_map<std::pair<int, int>, int>& sediment);
+void distribute_sand(vector<std::tuple<int, int, int>>& sediment);

@@ -24,6 +24,19 @@ bool DetectNumber(string s) {
     return false;
 }
 
+void FillValidCommandList(unordered_map<string, string>& valid_commands_list) {
+    valid_commands_list["-i"] = "--input";
+    valid_commands_list["--input"] = nullptr;
+    valid_commands_list["-o"] = "--output";
+    valid_commands_list["--output"] = nullptr;
+    valid_commands_list["-m"] = "--max-iter";
+    valid_commands_list["--max-iter"] = nullptr;
+    valid_commands_list["-f"] = "--freq";
+    valid_commands_list["--freq"] = nullptr;
+    valid_commands_list["-c"] = "--set-color";
+    valid_commands_list["--set-color"] = nullptr;
+}
+
 void FillArgValues(ArgValues& arg_value, string key, string value) {
     if (key == "-o") {
         arg_value.output_path = value;
@@ -41,56 +54,67 @@ void FillArgValues(ArgValues& arg_value, string key, string value) {
             return;
         }
         arg_value.freq = StringToInt(value);
-    }
+    } else if (key == "-c") {
+        arg_value.palette = value;
+    } 
 }
 
 bool ProcessCommand(const string arg, ArgValues& arg_values,
                     unordered_map<string, string>& valid_commands_list) {
     string cmd = arg.substr(0, arg.find('='));
-    
-    // Handle argument errors
+
+    // Handling error arguments
     if (cmd.substr(0, 2) == "--" && cmd.size() == 2) {
         std::cerr << "error: unknown option " << arg << std::endl;
-        return false; 
+        return false; // Return if we found wrong option
     }
 
     if (cmd.substr(0, 1) == "-" && cmd.size() == 1) {
         std::cerr << "error: unknown option " << arg << std::endl;
-        return false; 
+        return false; // Return if we found wrong option
     }
 
-    if (cmd.size() > arg_values.max_option_size || 
+    if (cmd.size() > arg_values.max_option_size ||
         valid_commands_list.count(cmd) == 0) {
         std::cerr << "error: unknown option " << arg << std::endl;
-        return false; 
-    } else if (!(arg.substr(0, 2) == "--") && 
-               arg.find('=') != arg.size()) {
+        return false; // Return if we found wrong option
+    } else if (!(arg.substr(0,2) == "--") &&
+        arg.find('=') != arg.size()) {
         std::cerr << "error: unknown option " << arg << std::endl;
-        return false; 
+        return false; // Return if we found wrong option
     }
 
-    if (!(valid_commands_list[cmd] == nullptr) && 
+    // Handling dublicated agruments
+    if (!(valid_commands_list[cmd] == nullptr) &&
         arg.substr(0, 2) == "--") {
-        std::cerr << "error: repetition of an argument " << cmd << std::endl;
-        return false; 
+        std::cerr << "error: repetition of an argument " 
+                  << cmd << std::endl;
+        return false; // Return if we found dublicated option
     }
 
-    string cmd_value = arg.substr(arg.find('=') + 1, arg.size());
+
+    // Make flags for arguments that we already handled
+    // Set flag that we already handled this type of argument
+    string cmd_value = arg.substr(arg.find('=')+1, arg.size());
     if (arg.substr(0, 2) == "--") {
-        if (cmd_value.empty() && (cmd.find('=') != cmd.size())) {
+        // Handling no value providition
+        if (cmd_value == "" && (cmd.find('=') != cmd.size())) {
             std::cerr << "error: " << cmd << " expects a value" << std::endl;
             return false;
-        } else if (cmd_value.empty() && (cmd.find('=') == cmd.size())) {
+        } else if (cmd_value == "" && (cmd.find('=') == cmd.size())) {
             return true;
         }
         string ShortArg = arg.substr(1, 3);
         valid_commands_list[cmd] = cmd_value;
+
         FillArgValues(arg_values, ShortArg, cmd_value);
+
         return false;
     } else {
-        if (!(valid_commands_list[cmd] == nullptr)) {
-            std::cerr << "error: repetition of an argument " << cmd << std::endl;
-            return false; 
+        if (!(valid_commands_list[valid_commands_list[cmd]] == nullptr)) {
+            std::cerr << "error: repetition of an argument " 
+                    << cmd << std::endl;
+            return false; // Return if we found dublicated option
         }
         string LongArg = valid_commands_list[cmd];
         string empty = "nl2#@. 0E2,n1_9y s*6#,lopjG ]K9j";
@@ -99,32 +123,44 @@ bool ProcessCommand(const string arg, ArgValues& arg_values,
     }
 }
 
+
 ArgValues Parser(const int argc, char* argv[], 
                  unordered_map<string, string>& valid_commands_list) {
+    // Structure for containing argument values
     ArgValues arg_values;
 
+    // We need to know max option size, so we can handle long wrong options
     for (auto& i : valid_commands_list) {
-        string current_option = i.first.substr(0, i.first.find('='));
+        string current_option = i.first.substr(0, i.first.find('=')); // We get the argument up to '=' sign. If '=' is not present we get whole argument. @example "--output=abc" will return "--output" and "--outputabc" will return "--outputabc"
         size_t current_option_size = current_option.size();
         if (current_option_size > arg_values.max_option_size) {
             arg_values.max_option_size = current_option_size;
         }
     }
 
+    // Processing all arguments
     for (int i = 1; i < argc; ++i) {
         if (argv[i][0] == '-') {
-            bool is_next_arg_a_value = ProcessCommand(argv[i], arg_values, valid_commands_list);
-            bool is_long = (argv[i][0] == '-' && argv[i][1] == '-');
-            if (is_next_arg_a_value && is_long && i + 1 != argc) {
-                valid_commands_list[argv[i]] = argv[i + 1];
-                FillArgValues(arg_values, argv[i].substr(1, 3), argv[i + 1]);
+            bool is_next_arg_a_value = ProcessCommand(
+                                            argv[i], 
+                                            arg_values, 
+                                            valid_commands_list);
+            bool is_long = false;
+            string argvi = argv[i];
+            if (argvi.substr(0, 2) == "--") {
+                is_long = true;
+            }
+            if (is_next_arg_a_value && is_long && i+1 != argc) {
+                string argviiplus1 = argv[i+1];
+                valid_commands_list[argvi] = argviiplus1;
+                FillArgValues(arg_values, argvi.substr(1, 3), argv[i+1]);
                 ++i;
                 continue;
-            } else if (is_next_arg_a_value && !is_long && i + 1 != argc) {
-                FillArgValues(arg_values, argv[i], argv[i + 1]);
+            } else if (is_next_arg_a_value && !(is_long) && i+1 != argc) {
+                FillArgValues(arg_values, argv[i], argv[i+1]);
                 ++i;
                 continue;       
-            } else if (is_next_arg_a_value && i + 1 == argc) {
+            } else if (is_next_arg_a_value && i+1 == argc) {
                 std::cerr << "error: " << argv[i] << " expects a value" << std::endl;
             }
         } else {
@@ -132,15 +168,4 @@ ArgValues Parser(const int argc, char* argv[],
         }
     }
     return arg_values;
-}
-
-void FillValidCommandList(unordered_map<string, string>& valid_commands_list) {
-    valid_commands_list["-i"] = "--input";
-    valid_commands_list["--input"] = nullptr;
-    valid_commands_list["-o"] = "--output";
-    valid_commands_list["--output"] = nullptr;
-    valid_commands_list["-m"] = "--max-iter";
-    valid_commands_list["--max-iter"] = nullptr;
-    valid_commands_list["-f"] = "--freq";
-    valid_commands_list["--freq"] = nullptr;
 }

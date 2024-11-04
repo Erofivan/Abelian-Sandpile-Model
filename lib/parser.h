@@ -2,16 +2,13 @@
 
 #include "dynamic_structures.h"
 
-using string;
-using unordered_map;
-
-// Структура для хранения значений аргументов
 struct ArgValues {
     string input_path;
     string output_path;
     int max_iter = 0;
     int freq = 0;
     size_t max_option_size = 0;
+    string palette;
 };
 
 int StringToInt(string str);
