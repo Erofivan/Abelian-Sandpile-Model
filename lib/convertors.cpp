@@ -64,7 +64,26 @@ void FillWithValues(string& str, string& dirname,
     char* buffer1 = new char[kInputPathNameSize + 1]; 
     memcpy(buffer1, str.c_str(), kInputPathNameSize); 
     buffer1[kInputPathNameSize] = '\0';
+    int dot_idx;
+    for (int c = 0; c < kInputPathNameSize; ++c) {
+        if (buffer1[c] == '.') {
+            dot_idx = c;
+            break;
+        }
+    }
+    char bufferbd[dot_idx + 1];
+    for (int i = 0; i < dot_idx; ++i) {
+        bufferbd[i] = buffer1[i];
+    }
+    bufferbd[dot_idx] = '\0';
+    char bufferad[kInputPathNameSize - dot_idx + 1];
+    for (int i = dot_idx; i <= kInputPathNameSize; ++i) {
+        bufferad[i-dot_idx] = buffer1[i];
+    }
+    
     const char* filename = buffer1;
+    const char* filename_to_dot = bufferbd;
+    const char* filename_after_dot = bufferad;
 
     const int kInputDirNameSize = dirname.size();
     char* buffer2 = new char [kInputDirNameSize + 1]; 
@@ -78,6 +97,14 @@ void FillWithValues(string& str, string& dirname,
     }
     
     std::filesystem::path full_path = pictures_dir / filename;
+    int counter = 1;
+    while (std::filesystem::exists(full_path)) {
+        std::stringstream ss;
+        ss << filename_to_dot << " (" << counter << ")" 
+           << filename_after_dot;
+        full_path = pictures_dir / ss.str();
+        ++counter;
+    }
 
     std::ofstream picture(full_path.string(), std::ios::binary);
 

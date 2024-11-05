@@ -33,8 +33,8 @@ void FillValidCommandList(unordered_map<string, string>& valid_commands_list) {
     valid_commands_list["--max-iter"] = nullptr;
     valid_commands_list["-f"] = "--freq";
     valid_commands_list["--freq"] = nullptr;
-    valid_commands_list["-c"] = "--set-color";
-    valid_commands_list["--set-color"] = nullptr;
+    valid_commands_list["-c"] = "--color";
+    valid_commands_list["--color"] = nullptr;
     valid_commands_list["-s"] = "--stats";
     valid_commands_list["--stats"] = "*6#,lopj2,n1_9y";
     valid_commands_list["-h"] = "--stats";
