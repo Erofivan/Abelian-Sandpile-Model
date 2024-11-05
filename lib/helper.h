@@ -8,6 +8,7 @@
 enum ErrorCode{
     InputPathWasNotProvided,
     OutputPathWasNotProvided,
+    HelpCommandMustBeExecuted
 };
 
 void ErrorMessage(size_t ErrorCode = 0);

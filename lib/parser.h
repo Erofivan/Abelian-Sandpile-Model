@@ -9,6 +9,8 @@ struct ArgValues {
     int freq = 0;
     size_t max_option_size = 0;
     string palette;
+    bool stats = false;
+    bool help = false;
 };
 
 int StringToInt(string str);

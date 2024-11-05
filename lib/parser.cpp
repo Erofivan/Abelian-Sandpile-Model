@@ -35,6 +35,10 @@ void FillValidCommandList(unordered_map<string, string>& valid_commands_list) {
     valid_commands_list["--freq"] = nullptr;
     valid_commands_list["-c"] = "--set-color";
     valid_commands_list["--set-color"] = nullptr;
+    valid_commands_list["-s"] = "--stats";
+    valid_commands_list["--stats"] = "*6#,lopj2,n1_9y";
+    valid_commands_list["-h"] = "--stats";
+    valid_commands_list["--help"] = "*6#,lopj2,n1_9y";
 }
 
 void FillArgValues(ArgValues& arg_value, string key, string value) {
@@ -56,6 +60,10 @@ void FillArgValues(ArgValues& arg_value, string key, string value) {
         arg_value.freq = StringToInt(value);
     } else if (key == "-c") {
         arg_value.palette = value;
+    } else if (key == "-s") {
+        arg_value.stats = true;
+    } else if (key == "-h") {
+        arg_value.help = true;
     } 
 }
 
@@ -90,6 +98,12 @@ bool ProcessCommand(const string arg, ArgValues& arg_values,
         std::cerr << "error: repetition of an argument " 
                   << cmd << std::endl;
         return false; // Return if we found dublicated option
+    }
+    //Handling arguents that do not need value
+    if (valid_commands_list[arg] == "*6#,lopj2,n1_9y" ||
+        valid_commands_list[valid_commands_list[arg]] == "*6#,lopj2,n1_9y") {
+        FillArgValues(arg_values, arg.substr(0, 2), "");
+        return false;
     }
 
 

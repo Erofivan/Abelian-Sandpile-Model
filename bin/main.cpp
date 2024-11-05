@@ -15,6 +15,11 @@ int main(int argc, char* argv[]) {
     ArgValues arg_values; // Structure for containing argument values
     arg_values = Parser(argc, argv, valid_commands_list);
 
+    if (argc == 1) {
+        ErrorMessage(HelpCommandMustBeExecuted);
+        return EXIT_FAILURE;
+    }
+
     // Outout values if needed
     PreviewValues(arg_values);
 
