@@ -62,6 +62,6 @@
 Программа должна закончить свою работу в случае если модель достигла стабильного состояния, либо номера заданной изначально итерации.
 
 ## Примеры
-![alt text](https://github.com/erofivn/Abelian-Sandpile-Model/blob/main/1000000.bmp?raw=true)
+![alt text](https://github.com/erofivn/Abelian-Sandpile-Model/blob/main/pics/1000000.bmp?raw=true)
 
 Больше примеров генерации можно найти в папке pics
